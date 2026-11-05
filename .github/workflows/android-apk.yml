@@ -1,0 +1,86 @@
+name: Build Android APK
+
+# Runs by itself whenever you upload changes, and you can also start it by hand:
+# repository > Actions > "Build Android APK" > Run workflow.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: write   # lets the build attach the finished APK to a Release page
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install packages
+        run: npm install --no-audit --no-fund
+
+      - name: Copy the web app into www
+        run: node scripts/copy-web.mjs
+
+      - name: Create the Android project
+        run: npx cap add android
+
+      - name: Make app icon and splash screen
+        run: >
+          npx capacitor-assets generate --android
+          --iconBackgroundColor "#0f172a" --iconBackgroundColorDark "#0f172a"
+          --splashBackgroundColor "#0f172a" --splashBackgroundColorDark "#0f172a"
+
+      - name: Sync plugins and web files
+        run: npx cap sync android
+
+      # The same signing key every time, so a new APK installs over the old one and keeps your data.
+      - name: Use the fixed signing key
+        run: |
+          mkdir -p "$HOME/.android"
+          cp signing/debug.keystore "$HOME/.android/debug.keystore"
+
+      - name: Build the APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Name the APK
+        run: |
+          ls -lh android/app/build/outputs/apk/debug/
+          cp android/app/build/outputs/apk/debug/app-debug.apk shift-pay.apk
+
+      # A Release page lets you download the APK straight onto your phone, with no unzipping.
+      - name: Put the APK on a Release page
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: Android app, build ${{ github.run_number }}
+          body: Tap **shift-pay.apk** below to download it, then open it to install.
+          files: shift-pay.apk
+          make_latest: true
+
+      - name: Save the APK for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: shift-pay-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30

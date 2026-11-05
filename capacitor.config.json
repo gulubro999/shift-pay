@@ -1,0 +1,12 @@
+{
+  "appId": "com.shiftpay.app",
+  "appName": "Shift Pay",
+  "webDir": "www",
+  "backgroundColor": "#f1f5f9",
+  "plugins": {
+    "SystemBars": {
+      "style": "LIGHT",
+      "insetsHandling": "css"
+    }
+  }
+}
