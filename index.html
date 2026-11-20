@@ -233,7 +233,7 @@
         <h3 class="text-[#0f172a] font-extrabold text-[16px]">Monthly Payroll &amp; True Salary</h3>
       </div>
       <p class="text-slate-500 text-xs leading-relaxed mb-4">
-        Enter what you got in hand, PF deposited, and food expenses. We sum them up to calculate your <strong class="text-slate-700">Total Gross Salary</strong>.
+        Enter what you got in hand, PF deposited, ESIC deducted, and food expenses. We sum them up to calculate your <strong class="text-slate-700">Total Gross Salary</strong>.
       </p>
 
       <div class="space-y-4">
@@ -256,7 +256,16 @@
           </div>
         </div>
         <div>
-          <label for="inputFood" class="block text-[#1e293b] text-xs font-extrabold mb-1.5">3. Mess / Food Expense (₹)</label>
+          <label for="inputESIC" class="block text-[#1e293b] text-xs font-extrabold mb-1.5">3. ESIC Deducted (₹)</label>
+          <div class="relative flex items-center">
+            <span class="absolute left-3.5 text-slate-400 font-bold text-sm">₹</span>
+            <input type="number" inputmode="decimal" min="0" id="inputESIC" placeholder="0"
+              class="w-full pl-8 pr-4 py-3 bg-[#f8fafc] border border-slate-200 rounded-2xl text-[#0f172a] font-extrabold text-[15px] focus:outline-none focus:border-indigo-500 focus:bg-white transition" />
+          </div>
+          <p class="text-slate-400 text-[11px] leading-snug mt-1.5">Your ESIC share is usually 0.75% of gross wages, and applies when wages are up to ₹21,000 a month. Check your pay slip and leave this empty if nothing is deducted.</p>
+        </div>
+        <div>
+          <label for="inputFood" class="block text-[#1e293b] text-xs font-extrabold mb-1.5">4. Mess / Food Expense (₹)</label>
           <div class="relative flex items-center">
             <span class="absolute left-3.5 text-slate-400 font-bold text-sm">₹</span>
             <input type="number" inputmode="decimal" min="0" id="inputFood" placeholder="0"
@@ -284,6 +293,10 @@
         <div class="flex items-center justify-between gap-3">
           <span class="text-slate-300">+ PF Deposited</span>
           <span id="calcPF" class="font-extrabold tnum">₹0</span>
+        </div>
+        <div class="flex items-center justify-between gap-3">
+          <span class="text-slate-300">+ ESIC Deducted</span>
+          <span id="calcESIC" class="font-extrabold tnum">₹0</span>
         </div>
         <div class="flex items-center justify-between gap-3">
           <span class="text-slate-300">+ Mess / Food</span>

@@ -112,7 +112,7 @@
       const s = m.s || {}, n = m.n || {}, p = m.p || {};
       Object.keys(s).forEach((d) => { if (/^\d{1,2}$/.test(d) && SHIFTS[s[d]]) out.s[d] = s[d]; });
       Object.keys(n).forEach((d) => { if (/^\d{1,2}$/.test(d) && typeof n[d] === 'string' && n[d].trim()) out.n[d] = n[d].slice(0, 300); });
-      ['inHand', 'pf', 'food'].forEach((f) => { const v = Number(p[f]); if (isFinite(v) && v > 0) out.p[f] = Math.min(v, 1e9); });
+      ['inHand', 'pf', 'esic', 'food'].forEach((f) => { const v = Number(p[f]); if (isFinite(v) && v > 0) out.p[f] = Math.min(v, 1e9); });
       c.months[k] = out;
     });
     return c;
@@ -153,11 +153,11 @@
   function calcPay(c, y, m) {
     const md = monthData(false, c, y, m);
     const p = (md && md.p) || {};
-    const inHand = num(p.inHand), pf = num(p.pf), food = num(p.food);
-    const gross = inHand + pf + food;
+    const inHand = num(p.inHand), pf = num(p.pf), esic = num(p.esic), food = num(p.food);
+    const gross = inHand + pf + esic + food;
     const st = calcStats(c, y, m);
     return {
-      inHand, pf, food, gross, present: st.present,
+      inHand, pf, esic, food, gross, present: st.present,
       perDay: st.present > 0 ? gross / st.present : 0,
       share: gross > 0 ? (inHand / gross) * 100 : 0
     };
@@ -365,6 +365,7 @@
     $('calcCardSubtitle').textContent = c.name + ' • ' + MON[state.m].toUpperCase() + ' ' + state.y;
     $('calcInHand').textContent = fmt(p.inHand);
     $('calcPF').textContent = fmt(p.pf);
+    $('calcESIC').textContent = fmt(p.esic);
     $('calcFood').textContent = fmt(p.food);
     tween($('calcTotal'), p.gross, fmt, true);
     $('calcPerDay').textContent = p.present > 0 && p.gross > 0 ? fmt(Math.round(p.perDay)) : '—';
@@ -376,6 +377,7 @@
     const p = (md && md.p) || {};
     $('inputInHand').value = p.inHand ? p.inHand : '';
     $('inputPF').value = p.pf ? p.pf : '';
+    $('inputESIC').value = p.esic ? p.esic : '';
     $('inputFood').value = p.food ? p.food : '';
   }
 
@@ -440,9 +442,10 @@
     if (!c) return;
     const md = monthData(true);
     const p = {};
-    const a = num($('inputInHand').value), b = num($('inputPF').value), f = num($('inputFood').value);
+    const a = num($('inputInHand').value), b = num($('inputPF').value), e = num($('inputESIC').value), f = num($('inputFood').value);
     if (a) p.inHand = a;
     if (b) p.pf = b;
+    if (e) p.esic = e;
     if (f) p.food = f;
     md.p = p;
     touch(c.id);
@@ -531,7 +534,7 @@
         step(1, 'Tap <b>Add New Company</b> and enter the name of your job. You can add more than one company.') +
         step(2, 'Open a company. Choose a <b>Mode</b> at the top: <b>Tap &amp; Pick</b> (tap a date, then choose the shift), <b>Fast Cycle</b> (each tap changes the shift), or Day / Eve / Night / Absent to paint dates directly.') +
         step(3, '<b>Press and hold</b> a date to add a note (for example overtime). Dates with a note show a small dot.') +
-        step(4, 'Fill in <b>In-Hand, PF and Mess</b> below. The sum of the three is your <b>Total Gross Salary</b>. Your earnings per present day are shown too.') +
+        step(4, 'Fill in <b>In-Hand, PF, ESIC and Mess</b> below. The sum of these is your <b>Total Gross Salary</b>. Your earnings per present day are shown too.') +
         step(5, 'Open the <b>Salary Slip</b> to see the full month summary, then save or copy it.') +
       '</ol>' +
       '<p class="text-[12px] text-slate-500 leading-relaxed mt-4 pt-3 border-t border-slate-100">' + where + '</p>' +
@@ -559,6 +562,7 @@
       'EARNINGS',
       'In-Hand Salary: ' + fmt(s.pay.inHand),
       'PF Deposited: ' + fmt(s.pay.pf),
+      'ESIC Deducted: ' + fmt(s.pay.esic),
       'Mess / Food: ' + fmt(s.pay.food),
       'Total Gross Salary: ' + fmt(s.pay.gross),
       'Per present day: ' + (s.pay.present > 0 && s.pay.gross > 0 ? fmt(Math.round(s.pay.perDay)) : '-')
@@ -582,6 +586,7 @@
       '</table><h2>Earnings</h2><table>' +
         row('In-Hand Salary', fmt(s.pay.inHand)) +
         row('PF Deposited', fmt(s.pay.pf)) +
+        row('ESIC Deducted', fmt(s.pay.esic)) +
         row('Mess / Food', fmt(s.pay.food)) +
         row('Total Gross Salary', fmt(s.pay.gross), true) +
         row('Per present day', s.pay.present > 0 && s.pay.gross > 0 ? fmt(Math.round(s.pay.perDay)) : '-') +
@@ -600,6 +605,7 @@
         '<p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mt-3.5 mb-1">Earnings</p>' +
         line('In-Hand Salary', fmt(s.pay.inHand)) +
         line('PF Deposited', fmt(s.pay.pf)) +
+        line('ESIC Deducted', fmt(s.pay.esic)) +
         line('Mess / Food', fmt(s.pay.food)) +
         '<div class="flex justify-between items-end gap-3 mt-2 pt-3 border-t-2 border-[#0f172a]"><span class="text-[13px] font-extrabold">Total Gross Salary</span><span class="text-[22px] leading-none font-extrabold text-[#047857] tnum">' + fmt(s.pay.gross) + '</span></div>' +
         (s.pay.present > 0 && s.pay.gross > 0 ? '<p class="text-[12px] text-slate-500 mt-2">Per present day: <b class="text-slate-700">' + fmt(Math.round(s.pay.perDay)) + '</b></p>' : '') +
@@ -725,7 +731,7 @@
     const prev = fill(py, pm, daysInMonth(py, pm));
     prev.n[5] = '2 hours overtime';
     prev.n[12] = 'Replacement duty';
-    prev.p = { inHand: 22500, pf: 2400, food: 1800 };
+    prev.p = { inHand: 22500, pf: 2400, esic: 169, food: 1800 };
     fill(t.getFullYear(), t.getMonth(), t.getDate());
     state.companies[c.id] = c;
     touch(c.id);
@@ -923,7 +929,7 @@
 
   document.addEventListener('input', (e) => {
     const id = e.target && e.target.id;
-    if (id === 'inputInHand' || id === 'inputPF' || id === 'inputFood') handlePayrollInput();
+    if (id === 'inputInHand' || id === 'inputPF' || id === 'inputESIC' || id === 'inputFood') handlePayrollInput();
   });
 
   document.addEventListener('keydown', (e) => {

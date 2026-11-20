@@ -3,7 +3,7 @@
  * Every time you change index.html, app.js, app.css or any icon, bump CACHE_VERSION
  * so phones pick up the new files. Saved data lives in localStorage, never in this cache,
  * so updating the app does not touch anyone's data. */
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE = 'shift-payroll-' + CACHE_VERSION;
 
 const APP_SHELL = [
