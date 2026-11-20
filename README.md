@@ -45,7 +45,7 @@ Inside the Android app, **Download Backup** opens the phone's share sheet. Save 
 
 ## 3. Updating the app later
 
-Change the files, upload them to the repository and download the new APK from the next run. The same signing key is used every time, so the new APK installs over the old one and keeps all data. Build results are kept for 30 days; press **Run workflow** again any time to make a fresh one.
+Change the files, upload them to the repository and download the new APK from the next run. The same signing key is used every time (the build checks this and stops if it is not), so the new APK installs over the old one and keeps all data. Build results are kept for 30 days; press **Run workflow** again any time to make a fresh one.
 
 `signing/debug.keystore` is a standard debug key, and anyone who can see your repository can see it. That is fine for an app you install yourself. If you want nobody to be able to produce an APK that updates your app, make the repository private. Before publishing on the Play Store, use a separate private release key instead (ask me to set that up).
 
@@ -75,5 +75,5 @@ To test on a computer: `python3 -m http.server 8000`, then open http://localhost
 
 ## Before publishing on the Play Store
 
-- Change `appId` in `capacitor.config.json` from `com.shiftpay.app` to your own (for example `com.yourname.shiftpay`). It cannot be changed after publishing.
+- The app id in `capacitor.config.json` is `com.gulubro999.shiftpay`. Change it to the one you want to keep before publishing, because it cannot be changed after publishing.
 - Use a private release key and build an AAB instead of the debug APK.
